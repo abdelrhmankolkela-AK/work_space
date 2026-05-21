@@ -1,0 +1,1164 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Co_Workspace | نظام إدارة مراكز الألعاب</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold: #f5c842;
+  --gold-dark: #c9941a;
+  --gold-light: #ffe98a;
+  --navy: #04061a;
+  --navy-mid: #080e2e;
+  --navy-light: #0f1640;
+  --accent: #00d4ff;
+  --accent2: #7c3aed;
+  --accent3: #10b981;
+  --glass: rgba(255,255,255,0.04);
+  --glass-border: rgba(245,200,66,0.18);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Cairo','Tajawal',sans-serif;background:var(--navy);color:#e8e8f0;overflow-x:hidden;cursor:none}
+
+/* CURSOR */
+.cursor{position:fixed;width:10px;height:10px;background:var(--gold);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:transform 0.1s,width 0.2s,height 0.2s;mix-blend-mode:difference}
+.cursor-ring{position:fixed;width:38px;height:38px;border:1.5px solid rgba(245,200,66,0.5);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:width 0.3s,height 0.3s,border-color 0.3s;opacity:0.7}
+.cursor.hover{width:20px;height:20px}
+.cursor-ring.hover{width:60px;height:60px;border-color:rgba(245,200,66,0.2)}
+
+/* BG */
+.bg-canvas{position:fixed;inset:0;z-index:0;
+  background:radial-gradient(ellipse 80% 60% at 10% 10%,#0d1b50 0%,transparent 60%),
+             radial-gradient(ellipse 60% 50% at 90% 90%,#1a0b40 0%,transparent 60%),
+             radial-gradient(ellipse 40% 40% at 50% 50%,#060c28 0%,transparent 70%),
+             #04061a}
+#particles{position:fixed;inset:0;z-index:1;pointer-events:none}
+.bg-grid{position:fixed;inset:0;z-index:2;pointer-events:none;
+  background-image:linear-gradient(rgba(245,200,66,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(245,200,66,0.03) 1px,transparent 1px);
+  background-size:70px 70px;animation:gridScroll 25s linear infinite}
+@keyframes gridScroll{to{background-position:70px 70px}}
+.orb{position:fixed;border-radius:50%;filter:blur(90px);pointer-events:none;z-index:1;animation:orbDrift 15s ease-in-out infinite}
+.orb-1{width:600px;height:600px;background:rgba(124,58,237,0.1);top:-15%;left:-10%;animation-delay:0s}
+.orb-2{width:500px;height:500px;background:rgba(0,212,255,0.07);bottom:-15%;right:-10%;animation-delay:-7s}
+.orb-3{width:350px;height:350px;background:rgba(245,200,66,0.05);top:50%;left:40%;animation-delay:-3.5s}
+@keyframes orbDrift{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(50px,-40px) scale(1.1)}66%{transform:translate(-30px,50px) scale(0.9)}}
+
+/* ===== SCREENSHOTS GALLERY ===== */
+.ss-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:20px;margin-top:0}
+.ss-card{grid-column:span 6;background:rgba(8,14,46,0.7);border:1px solid rgba(255,255,255,0.07);border-radius:20px;padding:24px;position:relative;overflow:hidden;transition:all 0.4s cubic-bezier(0.34,1.56,0.64,1)}
+.ss-card::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at var(--mx,50%) var(--my,50%),rgba(var(--card-rgb,245,200,66),0.06),transparent 60%);opacity:0;transition:opacity 0.4s;pointer-events:none}
+.ss-card:hover::before{opacity:1}
+.ss-card:hover{transform:translateY(-8px);border-color:rgba(255,255,255,0.14);box-shadow:0 24px 56px rgba(0,0,0,0.4)}
+.ss-wide{grid-column:span 12}
+.ss-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:100px;border:1px solid;font-size:11px;font-weight:700;margin-bottom:16px}
+.ss-mockup{background:rgba(4,6,26,0.8);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:16px}
+.ss-win-bar{display:flex;align-items:center;gap:6px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,0.05)}
+.ss-dot{width:10px;height:10px;border-radius:50%}
+.ss-table{display:flex;flex-direction:column;gap:0;margin-bottom:10px}
+.ss-thead{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;padding:6px 10px;font-size:10px;color:rgba(255,255,255,0.3);font-weight:700;letter-spacing:0.5px}
+.ss-trow{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;padding:7px 10px;font-size:12px;border-radius:7px;color:rgba(255,255,255,0.7)}
+.ss-trow:hover,.trow-gold{background:rgba(245,200,66,0.04)}
+.ss-stats-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.ss-stat-pill{padding:5px 12px;border-radius:8px;border:1px solid;font-size:11px;font-weight:700}
+.ss-bar-preview{display:flex;align-items:flex-end;gap:8px;height:60px;padding-top:8px}
+.ss-bar-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%}
+.ss-bar-item span{font-size:9px;color:rgba(255,255,255,0.3)}
+.ss-bar-fill-anim{width:100%;border-radius:3px 3px 0 0;animation:barGrow 1s cubic-bezier(0.34,1.56,0.64,1) forwards;transform-origin:bottom;transform:scaleY(0)}
+@keyframes barGrow{to{transform:scaleY(1)}}
+.ss-revenue-chart{display:flex;align-items:flex-end;gap:6px;height:80px;margin-bottom:12px}
+.ss-rev-bar{flex:1;background:linear-gradient(to top,rgba(0,212,255,0.6),rgba(0,212,255,0.1));border-radius:4px 4px 0 0;position:relative;transition:all 0.5s}
+.ss-rev-peak{background:linear-gradient(to top,#00d4ff,rgba(0,212,255,0.4))!important;box-shadow:0 0 16px rgba(0,212,255,0.4)}
+.ss-rev-day{position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);font-size:9px;color:rgba(255,255,255,0.3);white-space:nowrap}
+.ss-src-row{display:flex;gap:12px;margin-top:20px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.05)}
+.ss-src{display:flex;align-items:center;gap:5px;font-size:11px;color:rgba(255,255,255,0.5)}
+.ss-src strong{font-size:12px}
+.ss-products{display:flex;flex-direction:column;gap:6px}
+.ss-prod{display:flex;align-items:center;gap:8px;font-size:11px}
+.ss-prod-name{width:90px;color:rgba(255,255,255,0.6);flex-shrink:0}
+.ss-prod-bar{flex:1;height:8px;background:rgba(255,255,255,0.05);border-radius:4px;overflow:hidden}
+.ss-prod-val{width:36px;color:rgba(255,255,255,0.5);font-size:11px;text-align:left}
+.ai-metric{display:flex;align-items:center;gap:8px}
+.ai-bar-wrap{flex:1;height:10px;background:rgba(255,255,255,0.05);border-radius:5px;overflow:hidden}
+
+/* LinkedIn/YouTube contact card hover effects */
+.contact-card.li:hover{background:rgba(10,102,194,0.06)!important;border-color:rgba(10,102,194,0.4)!important;box-shadow:0 20px 48px rgba(10,102,194,0.15)!important}
+.contact-card.yt:hover{background:rgba(255,0,0,0.06)!important;border-color:rgba(255,0,0,0.4)!important;box-shadow:0 20px 48px rgba(255,0,0,0.12)!important}
+
+
+.noise{position:fixed;inset:0;z-index:3;pointer-events:none;opacity:0.025;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:200px 200px}
+
+.page{position:relative;z-index:10}
+
+/* ===== NAV ===== */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:18px 56px;
+  background:rgba(4,6,26,0.6);backdrop-filter:blur(24px) saturate(180%);
+  border-bottom:1px solid rgba(245,200,66,0.1);
+  display:flex;align-items:center;justify-content:space-between;
+  transition:all 0.4s}
+nav.scrolled{padding:12px 56px;background:rgba(4,6,26,0.92)}
+.nav-logo{display:flex;align-items:center;gap:14px;text-decoration:none}
+.logo-mark{position:relative;width:46px;height:46px}
+.logo-mark svg{width:100%;height:100%}
+.logo-texts{}
+.logo-main{font-size:20px;font-weight:900;color:#fff;letter-spacing:1px;display:block}
+.logo-main span{color:var(--gold)}
+.logo-sub-text{font-size:10px;color:rgba(255,255,255,0.4);font-weight:400;letter-spacing:2px;text-transform:uppercase;display:block;margin-top:1px}
+.nav-center{display:flex;gap:36px;list-style:none}
+.nav-center a{color:rgba(255,255,255,0.6);text-decoration:none;font-size:14px;font-weight:600;transition:all 0.25s;position:relative;padding-bottom:5px}
+.nav-center a::after{content:'';position:absolute;bottom:0;right:50%;left:50%;height:1.5px;background:var(--gold);transition:all 0.3s ease;border-radius:2px}
+.nav-center a:hover{color:#fff}
+.nav-center a:hover::after{right:0;left:0}
+.nav-actions{display:flex;align-items:center;gap:12px}
+.btn-nav-ghost{background:transparent;border:1px solid rgba(245,200,66,0.3);color:var(--gold);padding:9px 22px;border-radius:8px;font-family:'Cairo',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all 0.3s}
+.btn-nav-ghost:hover{background:rgba(245,200,66,0.08);border-color:var(--gold)}
+.btn-nav-solid{background:linear-gradient(135deg,var(--gold),var(--gold-dark));color:#04061a;padding:9px 22px;border-radius:8px;border:none;font-family:'Cairo',sans-serif;font-size:13px;font-weight:800;cursor:pointer;transition:all 0.3s;box-shadow:0 4px 24px rgba(245,200,66,0.25)}
+.btn-nav-solid:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(245,200,66,0.45)}
+
+/* ===== HERO ===== */
+.hero{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:130px 56px 80px;position:relative;overflow:hidden}
+.hero-bg-text{position:absolute;font-size:280px;font-weight:900;color:rgba(245,200,66,0.025);white-space:nowrap;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;letter-spacing:-10px;animation:bgTextDrift 20s ease-in-out infinite alternate;z-index:1}
+@keyframes bgTextDrift{from{transform:translate(-52%,-50%)}to{transform:translate(-48%,-50%)}}
+.hero-inner{max-width:980px;text-align:center;position:relative;z-index:2}
+
+/* Animated badge */
+.hero-pill{display:inline-flex;align-items:center;gap:10px;background:rgba(124,58,237,0.12);border:1px solid rgba(124,58,237,0.3);border-radius:100px;padding:7px 20px;margin-bottom:36px;font-size:13px;color:#a78bfa;font-weight:600;
+  animation:pillIn 0.8s cubic-bezier(0.34,1.56,0.64,1) forwards;opacity:0;animation-delay:0.2s}
+@keyframes pillIn{from{opacity:0;transform:scale(0.8) translateY(-10px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.pill-anim{width:6px;height:6px;border-radius:50%;background:#a78bfa;animation:pillPulse 1.5s ease-in-out infinite}
+@keyframes pillPulse{0%,100%{box-shadow:0 0 0 0 rgba(167,139,250,0.7)}70%{box-shadow:0 0 0 6px rgba(167,139,250,0)}}
+
+/* Big title with letter animation */
+.hero-title{font-size:clamp(44px,6.5vw,88px);font-weight:900;line-height:1.05;color:#fff;margin-bottom:8px;
+  animation:titleIn 1s cubic-bezier(0.16,1,0.3,1) 0.4s forwards;opacity:0;transform:translateY(40px)}
+@keyframes titleIn{to{opacity:1;transform:translateY(0)}}
+.hero-title .line-gold{
+  background:linear-gradient(135deg,var(--gold) 0%,#ff9f43 50%,var(--accent) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  display:inline-block;background-size:200% auto;animation:gradShift 4s linear infinite}
+@keyframes gradShift{to{background-position:200% center}}
+.hero-title .line-outline{-webkit-text-stroke:1.5px rgba(255,255,255,0.3);color:transparent;display:block;font-size:0.85em}
+
+.hero-name-card{display:inline-flex;align-items:center;gap:14px;
+  background:rgba(245,200,66,0.06);border:1px solid rgba(245,200,66,0.2);
+  border-radius:14px;padding:14px 24px;margin:20px 0 32px;
+  animation:titleIn 1s cubic-bezier(0.16,1,0.3,1) 0.55s forwards;opacity:0;transform:translateY(30px)}
+.name-avatar{width:44px;height:44px;border-radius:50%;
+  background:linear-gradient(135deg,var(--gold),var(--accent2));
+  display:grid;place-items:center;font-size:18px;font-weight:900;color:#fff;
+  flex-shrink:0;box-shadow:0 4px 20px rgba(245,200,66,0.3)}
+.name-info{}
+.name-main{font-size:15px;font-weight:800;color:var(--gold-light);display:block}
+.name-role{font-size:12px;color:rgba(255,255,255,0.45);display:block;margin-top:2px}
+
+.hero-desc{font-size:18px;color:rgba(255,255,255,0.55);max-width:600px;margin:0 auto 48px;line-height:1.9;font-weight:400;
+  animation:titleIn 1s cubic-bezier(0.16,1,0.3,1) 0.65s forwards;opacity:0;transform:translateY(20px)}
+
+.hero-cta{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;
+  animation:titleIn 1s cubic-bezier(0.16,1,0.3,1) 0.8s forwards;opacity:0;transform:translateY(20px)}
+
+.btn-hero-main{position:relative;overflow:hidden;
+  background:linear-gradient(135deg,var(--gold),var(--gold-dark));
+  color:#04061a;border:none;padding:17px 44px;border-radius:14px;
+  font-family:'Cairo',sans-serif;font-size:16px;font-weight:800;cursor:pointer;
+  transition:all 0.35s;box-shadow:0 8px 32px rgba(245,200,66,0.35)}
+.btn-hero-main::after{content:'';position:absolute;inset:-1px;border-radius:14px;
+  background:linear-gradient(135deg,var(--gold-light),var(--gold));opacity:0;transition:opacity 0.3s}
+.btn-hero-main:hover{transform:translateY(-4px) scale(1.02);box-shadow:0 16px 48px rgba(245,200,66,0.55)}
+.btn-hero-main:hover::after{opacity:1}
+.btn-hero-main span{position:relative;z-index:1}
+
+.btn-hero-ghost{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);color:#fff;
+  padding:17px 44px;border-radius:14px;font-family:'Cairo',sans-serif;font-size:16px;font-weight:600;
+  cursor:pointer;transition:all 0.35s;backdrop-filter:blur(10px)}
+.btn-hero-ghost:hover{background:rgba(255,255,255,0.08);border-color:rgba(245,200,66,0.4);transform:translateY(-4px)}
+
+/* Contact buttons */
+.contact-strip{display:flex;gap:14px;justify-content:center;margin-top:24px;
+  animation:titleIn 1s cubic-bezier(0.16,1,0.3,1) 0.95s forwards;opacity:0;transform:translateY(20px)}
+.contact-btn{display:flex;align-items:center;gap:10px;text-decoration:none;
+  background:var(--glass);border:1px solid rgba(255,255,255,0.08);
+  border-radius:12px;padding:12px 22px;font-size:14px;font-weight:700;
+  transition:all 0.35s;backdrop-filter:blur(8px);color:#fff}
+.contact-btn:hover{transform:translateY(-3px) scale(1.03)}
+.contact-btn.whatsapp{border-color:rgba(37,211,102,0.3)}
+.contact-btn.whatsapp:hover{background:rgba(37,211,102,0.1);border-color:rgba(37,211,102,0.6);box-shadow:0 8px 24px rgba(37,211,102,0.2)}
+.contact-btn.facebook{border-color:rgba(24,119,242,0.3)}
+.contact-btn.facebook:hover{background:rgba(24,119,242,0.1);border-color:rgba(24,119,242,0.6);box-shadow:0 8px 24px rgba(24,119,242,0.2)}
+.contact-icon{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;font-size:16px;flex-shrink:0}
+.wa-icon{background:rgba(37,211,102,0.15)}
+.fb-icon-wrap{background:rgba(24,119,242,0.15)}
+
+/* Floating stat cards */
+.hero-float{position:absolute;pointer-events:none;z-index:3}
+.hf-1{left:3%;top:28%;animation:hfloat 7s ease-in-out infinite}
+.hf-2{right:3%;top:32%;animation:hfloat 7s ease-in-out infinite;animation-delay:-3.5s}
+.hf-3{left:8%;bottom:20%;animation:hfloat 9s ease-in-out infinite;animation-delay:-2s}
+@keyframes hfloat{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-14px) rotate(1deg)}}
+.hf-card{background:rgba(8,14,46,0.85);backdrop-filter:blur(24px);
+  border:1px solid rgba(245,200,66,0.15);border-radius:16px;padding:16px 20px;
+  min-width:160px}
+.hf-card .hf-val{font-size:24px;font-weight:900;margin-bottom:2px}
+.hf-card .hf-lbl{font-size:11px;color:rgba(255,255,255,0.45);font-weight:400}
+.hf-card .hf-trend{font-size:11px;margin-top:6px;font-weight:700}
+.hf-bar{height:3px;border-radius:2px;margin-top:10px;overflow:hidden;background:rgba(255,255,255,0.06)}
+.hf-fill{height:100%;border-radius:2px;animation:fillGrow 3s ease-in-out infinite alternate}
+@keyframes fillGrow{from{width:30%}to{width:95%}}
+
+/* Scroll hint */
+.scroll-hint{position:absolute;bottom:36px;left:50%;transform:translateX(-50%);
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  color:rgba(255,255,255,0.25);font-size:11px;letter-spacing:2px;text-transform:uppercase;
+  animation:scrollBounce 2.5s ease-in-out infinite}
+@keyframes scrollBounce{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(10px)}}
+.scroll-line{width:1px;height:44px;background:linear-gradient(to bottom,rgba(245,200,66,0.5),transparent)}
+
+/* ===== STATS MARQUEE ===== */
+.marquee-section{padding:32px 0;border-top:1px solid rgba(245,200,66,0.07);border-bottom:1px solid rgba(245,200,66,0.07);overflow:hidden;position:relative}
+.marquee-track{display:flex;gap:0;animation:marqueeScroll 30s linear infinite}
+.marquee-item{display:flex;align-items:center;gap:10px;padding:0 48px;white-space:nowrap;flex-shrink:0}
+.mi-num{font-size:26px;font-weight:900;color:var(--gold)}
+.mi-txt{font-size:14px;color:rgba(255,255,255,0.4);font-weight:400}
+.mi-sep{width:4px;height:4px;border-radius:50%;background:rgba(245,200,66,0.3)}
+@keyframes marqueeScroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+/* ===== GENERAL SECTION ===== */
+section{padding:120px 56px;position:relative}
+.container{max-width:1200px;margin:0 auto}
+.sec-eyebrow{display:inline-block;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;padding:5px 16px;border-radius:100px;margin-bottom:18px}
+.eyebrow-gold{background:rgba(245,200,66,0.1);border:1px solid rgba(245,200,66,0.25);color:var(--gold)}
+.eyebrow-cyan{background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.25);color:var(--accent)}
+.eyebrow-purple{background:rgba(124,58,237,0.1);border:1px solid rgba(124,58,237,0.25);color:#a78bfa}
+.sec-title{font-size:clamp(30px,4vw,52px);font-weight:900;color:#fff;line-height:1.15;margin-bottom:16px}
+.sec-desc{font-size:17px;color:rgba(255,255,255,0.5);line-height:1.9;max-width:560px}
+.sep-line{width:48px;height:3px;background:linear-gradient(to left,var(--gold),var(--accent));border-radius:2px;margin:20px 0}
+
+/* reveal */
+.reveal{opacity:0;transform:translateY(48px);transition:opacity 0.9s cubic-bezier(0.16,1,0.3,1),transform 0.9s cubic-bezier(0.16,1,0.3,1)}
+.reveal.in{opacity:1;transform:translateY(0)}
+.rd1{transition-delay:0.1s}.rd2{transition-delay:0.2s}.rd3{transition-delay:0.3s}.rd4{transition-delay:0.4s}.rd5{transition-delay:0.5s}.rd6{transition-delay:0.6s}
+
+/* ===== FEATURES ===== */
+.features-section{}
+.feat-header{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:end;margin-bottom:72px}
+.feat-right-text{font-size:15px;color:rgba(255,255,255,0.45);line-height:1.9;text-align:left}
+
+.feat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+.feat-card{position:relative;overflow:hidden;border-radius:20px;
+  background:rgba(8,14,46,0.6);border:1px solid rgba(255,255,255,0.05);
+  padding:30px 26px;
+  transition:all 0.45s cubic-bezier(0.34,1.56,0.64,1);
+  cursor:pointer;group:true}
+.feat-card::before{content:'';position:absolute;inset:0;border-radius:20px;
+  background:radial-gradient(circle at var(--mx,50%) var(--my,50%),rgba(245,200,66,0.07) 0%,transparent 65%);
+  opacity:0;transition:opacity 0.4s;pointer-events:none}
+.feat-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;
+  transform:scaleX(0);transform-origin:center;
+  background:var(--card-accent,var(--gold));transition:transform 0.4s ease;border-radius:2px}
+.feat-card:hover{transform:translateY(-10px) scale(1.015);
+  border-color:rgba(245,200,66,0.2);
+  box-shadow:0 24px 64px rgba(0,0,0,0.5),0 0 0 1px rgba(245,200,66,0.1)}
+.feat-card:hover::before{opacity:1}
+.feat-card:hover::after{transform:scaleX(1)}
+.feat-card.wide{grid-column:span 2}
+
+.fc-icon{width:54px;height:54px;border-radius:14px;display:grid;place-items:center;font-size:26px;margin-bottom:20px;position:relative;flex-shrink:0}
+.fc-icon::after{content:'';position:absolute;inset:0;border-radius:14px;opacity:0.15;background:var(--card-accent,var(--gold))}
+.fc-title{font-size:18px;font-weight:800;color:#fff;margin-bottom:8px}
+.fc-desc{font-size:13.5px;color:rgba(255,255,255,0.5);line-height:1.8}
+.fc-badge{display:inline-block;font-size:10px;font-weight:700;padding:3px 10px;border-radius:100px;margin-bottom:12px;letter-spacing:1px;text-transform:uppercase}
+.badge-ai{background:rgba(124,58,237,0.15);color:#a78bfa;border:1px solid rgba(124,58,237,0.25)}
+.badge-new{background:rgba(16,185,129,0.15);color:#10b981;border:1px solid rgba(16,185,129,0.25)}
+
+/* ===== BENTO DASHBOARD ===== */
+.bento-section{}
+.bento-grid{display:grid;grid-template-columns:repeat(12,1fr);grid-template-rows:auto;gap:16px;margin-top:64px}
+.bento-card{background:rgba(8,14,46,0.7);border:1px solid rgba(255,255,255,0.05);border-radius:20px;padding:28px;overflow:hidden;position:relative;transition:all 0.4s cubic-bezier(0.34,1.56,0.64,1)}
+.bento-card:hover{border-color:rgba(245,200,66,0.15);transform:translateY(-4px);box-shadow:0 20px 48px rgba(0,0,0,0.4)}
+.bento-card.gc-8{grid-column:span 8}
+.bento-card.gc-4{grid-column:span 4}
+.bento-card.gc-6{grid-column:span 6}
+.bento-card.gc-3{grid-column:span 3}
+.bento-card.gc-5{grid-column:span 5}
+.bento-card.gc-7{grid-column:span 7}
+
+.bc-label{font-size:11px;color:rgba(255,255,255,0.35);font-weight:600;letter-spacing:2px;text-transform:uppercase;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.bc-label::before{content:'';width:4px;height:4px;border-radius:50%;background:var(--gold)}
+.bc-big-num{font-size:52px;font-weight:900;line-height:1;margin-bottom:6px}
+.bc-sub{font-size:13px;color:rgba(255,255,255,0.4)}
+.bc-trend-badge{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:100px;font-size:12px;font-weight:700;margin-top:12px}
+.trend-up-badge{background:rgba(16,185,129,0.12);color:#10b981;border:1px solid rgba(16,185,129,0.2)}
+.trend-down-badge{background:rgba(239,68,68,0.12);color:#ef4444;border:1px solid rgba(239,68,68,0.2)}
+
+/* Mini bar chart */
+.mini-bars{display:flex;align-items:flex-end;gap:6px;height:60px;margin-top:20px}
+.mini-bar{flex:1;border-radius:4px 4px 0 0;transition:height 0.3s;position:relative;cursor:pointer}
+.mini-bar:hover{opacity:0.8}
+.mini-bar::after{content:attr(data-tip);position:absolute;bottom:100%;left:50%;transform:translateX(-50%);background:#fff;color:#04061a;font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;white-space:nowrap;opacity:0;pointer-events:none;margin-bottom:4px;transition:opacity 0.2s}
+.mini-bar:hover::after{opacity:1}
+
+/* Live clock */
+.live-clock{font-size:38px;font-weight:900;color:#fff;letter-spacing:3px;font-variant-numeric:tabular-nums}
+.live-date{font-size:13px;color:rgba(255,255,255,0.4);margin-top:4px}
+
+/* Rooms grid */
+.rooms-bento{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:8px}
+.rb{border-radius:10px;padding:10px 6px;text-align:center;font-size:11px;font-weight:700;transition:all 0.2s;cursor:pointer}
+.rb:hover{transform:scale(1.08)}
+.rb-on{background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.25);color:#10b981}
+.rb-off{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);color:rgba(255,255,255,0.25)}
+.rb-soon{background:rgba(245,200,66,0.1);border:1px solid rgba(245,200,66,0.2);color:var(--gold)}
+.rb-num{font-size:15px;font-weight:900;display:block;margin-bottom:2px}
+
+/* Activity feed */
+.activity-feed{display:flex;flex-direction:column;gap:0;margin-top:8px}
+.af-item{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.04)}
+.af-item:last-child{border-bottom:none}
+.af-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.af-text{font-size:13px;color:rgba(255,255,255,0.6);flex:1}
+.af-time{font-size:11px;color:rgba(255,255,255,0.25);flex-shrink:0}
+
+/* Progress ring */
+.ring-wrap{display:flex;flex-direction:column;align-items:center;gap:8px;margin-top:12px}
+.ring-label{font-size:12px;color:rgba(255,255,255,0.4)}
+
+/* ===== MODULES ===== */
+.modules-section{}
+.modules-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin-top:64px}
+.mod-card{background:rgba(8,14,46,0.6);border:1px solid rgba(255,255,255,0.05);
+  border-radius:18px;padding:28px 22px;text-align:center;
+  position:relative;overflow:hidden;cursor:pointer;
+  transition:all 0.4s cubic-bezier(0.34,1.56,0.64,1)}
+.mod-card::before{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;
+  background:var(--mc,var(--gold));transform:scaleX(0);transition:transform 0.35s;transform-origin:center}
+.mod-card::after{content:'';position:absolute;inset:0;
+  background:radial-gradient(circle at 50% 120%,var(--mc,rgba(245,200,66,0.08)) 0%,transparent 60%);
+  opacity:0;transition:opacity 0.35s}
+.mod-card:hover{transform:translateY(-8px);border-color:rgba(255,255,255,0.1)}
+.mod-card:hover::before{transform:scaleX(1)}
+.mod-card:hover::after{opacity:1}
+.mod-em{font-size:34px;display:block;margin-bottom:14px;filter:drop-shadow(0 4px 10px rgba(0,0,0,0.4));transition:transform 0.3s}
+.mod-card:hover .mod-em{transform:scale(1.15) rotate(-5deg)}
+.mod-name{font-size:15px;font-weight:800;color:#fff;margin-bottom:5px}
+.mod-detail{font-size:12px;color:rgba(255,255,255,0.4);line-height:1.7}
+
+/* ===== HOW IT WORKS ===== */
+.hiw-section{overflow:hidden}
+.hiw-inner{display:grid;grid-template-columns:1fr 1.2fr;gap:80px;align-items:center;max-width:1100px;margin:0 auto}
+.hiw-steps{display:flex;flex-direction:column;gap:0;margin-top:0}
+.step-row{display:flex;gap:24px;align-items:flex-start;padding-bottom:40px;position:relative}
+.step-row:last-child{padding-bottom:0}
+.step-left{display:flex;flex-direction:column;align-items:center;flex-shrink:0;width:52px}
+.step-circle{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;font-size:20px;font-weight:900;color:#04061a;background:linear-gradient(135deg,var(--gold),var(--gold-dark));flex-shrink:0;position:relative;z-index:2;box-shadow:0 0 24px rgba(245,200,66,0.25);transition:all 0.3s}
+.step-row:hover .step-circle{box-shadow:0 0 40px rgba(245,200,66,0.5);transform:scale(1.08)}
+.step-vert-line{width:2px;flex:1;background:linear-gradient(to bottom,rgba(245,200,66,0.3),rgba(245,200,66,0.05));min-height:40px;margin-top:6px}
+.step-content{padding-top:10px}
+.step-t{font-size:20px;font-weight:800;color:#fff;margin-bottom:7px}
+.step-d{font-size:14px;color:rgba(255,255,255,0.5);line-height:1.8}
+.hiw-visual{border-radius:24px;overflow:hidden;border:1px solid rgba(245,200,66,0.1);box-shadow:0 32px 80px rgba(0,0,0,0.5)}
+.hiw-screen{background:linear-gradient(145deg,#080e2e,#0f1640);padding:28px}
+.hs-top{display:flex;gap:6px;margin-bottom:20px}
+.hs-dot{width:10px;height:10px;border-radius:50%}
+.hs-input{flex:1;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:8px;height:24px}
+.hs-cards{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.hs-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.05);border-radius:12px;padding:16px}
+.hs-num{font-size:26px;font-weight:900;margin-bottom:4px}
+.hs-lbl{font-size:11px;color:rgba(255,255,255,0.35)}
+.hs-bar-row{height:4px;border-radius:2px;background:rgba(255,255,255,0.05);overflow:hidden;margin-top:10px}
+.hs-bar-fill{height:100%;border-radius:2px;background:linear-gradient(to right,var(--gold),var(--accent));animation:barAnim 2.5s ease-in-out infinite alternate}
+@keyframes barAnim{from{width:30%}to{width:85%}}
+.hs-list{display:flex;flex-direction:column;gap:8px}
+.hs-li{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.02);border-radius:8px;padding:10px 12px}
+.hs-li-dot{width:6px;height:6px;border-radius:50%}
+.hs-li-text{font-size:12px;color:rgba(255,255,255,0.5);flex:1}
+.hs-li-chip{font-size:10px;padding:2px 8px;border-radius:100px;font-weight:700}
+.chip-green{background:rgba(16,185,129,0.12);color:#10b981}
+.chip-gold{background:rgba(245,200,66,0.1);color:var(--gold)}
+.chip-cyan{background:rgba(0,212,255,0.1);color:var(--accent)}
+
+/* ===== CONTACT SECTION ===== */
+.contact-section{text-align:center}
+.contact-cards{display:flex;gap:20px;justify-content:center;margin-top:56px;flex-wrap:wrap}
+.contact-card{display:flex;flex-direction:column;align-items:center;gap:16px;
+  background:rgba(8,14,46,0.7);border:1px solid rgba(255,255,255,0.06);
+  border-radius:22px;padding:36px 44px;text-decoration:none;
+  transition:all 0.4s cubic-bezier(0.34,1.56,0.64,1);min-width:200px}
+.contact-card:hover{transform:translateY(-10px) scale(1.02)}
+.contact-card.wa{border-color:rgba(37,211,102,0.15)}
+.contact-card.wa:hover{background:rgba(37,211,102,0.06);border-color:rgba(37,211,102,0.4);box-shadow:0 20px 48px rgba(37,211,102,0.15)}
+.contact-card.fb{border-color:rgba(24,119,242,0.15)}
+.contact-card.fb:hover{background:rgba(24,119,242,0.06);border-color:rgba(24,119,242,0.4);box-shadow:0 20px 48px rgba(24,119,242,0.15)}
+.cc-icon{width:62px;height:62px;border-radius:18px;display:grid;place-items:center;font-size:30px;transition:transform 0.3s}
+.contact-card:hover .cc-icon{transform:scale(1.1) rotate(-5deg)}
+.cc-wa-bg{background:rgba(37,211,102,0.12);border:1px solid rgba(37,211,102,0.2)}
+.cc-fb-bg{background:rgba(24,119,242,0.12);border:1px solid rgba(24,119,242,0.2)}
+.cc-name{font-size:18px;font-weight:800;color:#fff}
+.cc-handle{font-size:13px;color:rgba(255,255,255,0.4);margin-top:2px}
+
+/* ===== CTA ===== */
+.cta-section{text-align:center;position:relative;overflow:hidden;padding:120px 56px}
+.cta-bg-circle{position:absolute;width:800px;height:800px;border-radius:50%;
+  background:radial-gradient(circle,rgba(245,200,66,0.04) 0%,transparent 70%);
+  top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none}
+.cta-title{font-size:clamp(36px,5vw,64px);font-weight:900;color:#fff;margin-bottom:16px;line-height:1.1}
+.cta-title span{background:linear-gradient(135deg,var(--gold),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.cta-sub{font-size:18px;color:rgba(255,255,255,0.45);max-width:500px;margin:0 auto 48px;line-height:1.8}
+
+/* ===== FOOTER ===== */
+footer{padding:48px 56px;border-top:1px solid rgba(255,255,255,0.04)}
+.footer-inner{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:24px}
+.footer-brand .fb-name{font-size:20px;font-weight:900;color:var(--gold);margin-bottom:4px}
+.footer-brand .fb-sub{font-size:12px;color:rgba(255,255,255,0.3)}
+.footer-links-list{display:flex;gap:28px;list-style:none}
+.footer-links-list a{font-size:13px;color:rgba(255,255,255,0.35);text-decoration:none;transition:color 0.2s}
+.footer-links-list a:hover{color:var(--gold)}
+.footer-copy{font-size:12px;color:rgba(255,255,255,0.2);text-align:left}
+
+/* RIPPLE */
+.ripple{position:absolute;border-radius:50%;background:rgba(255,255,255,0.12);transform:scale(0);animation:ripOut 0.65s linear;pointer-events:none}
+@keyframes ripOut{to{transform:scale(4);opacity:0}}
+
+@media(max-width:1100px){
+  nav{padding:14px 24px}
+  .nav-center{display:none}
+  section{padding:80px 24px}
+  .hero{padding:110px 24px 70px}
+  .feat-grid{grid-template-columns:repeat(2,1fr)}
+  .feat-card.wide{grid-column:span 1}
+  .bento-card.gc-8,.bento-card.gc-4,.bento-card.gc-6,.bento-card.gc-3,.bento-card.gc-5,.bento-card.gc-7{grid-column:span 12}
+  .modules-grid{grid-template-columns:repeat(2,1fr)}
+  .hiw-inner{grid-template-columns:1fr}
+  .hiw-visual{display:none}
+  .hero-float{display:none}
+  .feat-header{grid-template-columns:1fr}
+  .footer-inner{flex-direction:column;text-align:center}
+  .footer-copy{text-align:center}
+}
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+<div class="bg-canvas"></div>
+<canvas id="particles"></canvas>
+<div class="bg-grid"></div>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+<div class="noise"></div>
+
+<div class="page">
+
+<!-- NAV -->
+<nav id="navbar">
+  <a href="#" class="nav-logo">
+    <div class="logo-mark">
+      <svg viewBox="0 0 46 46" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="46" height="46" rx="12" fill="url(#lg1)"/>
+        <text x="23" y="32" text-anchor="middle" font-size="22" font-weight="900" fill="#04061a" font-family="Cairo,sans-serif">C</text>
+        <defs>
+          <linearGradient id="lg1" x1="0" y1="0" x2="46" y2="46">
+            <stop offset="0%" stop-color="#f5c842"/>
+            <stop offset="100%" stop-color="#c9941a"/>
+          </linearGradient>
+        </defs>
+      </svg>
+    </div>
+    <div class="logo-texts">
+      <span class="logo-main">Co<span>_Workspace</span></span>
+      <span class="logo-sub-text">Gaming Center OS</span>
+    </div>
+  </a>
+  <ul class="nav-center">
+    <li><a href="#features">المميزات</a></li>
+    <li><a href="#dashboard">لوحة التحكم</a></li>
+    <li><a href="#screenshots">لقطات النظام</a></li>
+    <li><a href="#modules">الوحدات</a></li>
+    <li><a href="#contact">تواصل</a></li>
+  </ul>
+  <div class="nav-actions">
+    <button class="btn-nav-ghost" onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth'})">تواصل معنا</button>
+    <button class="btn-nav-solid" onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth'})">ابدأ الآن ←</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="home">
+  <div class="hero-bg-text">CO_WORKSPACE</div>
+
+  <!-- floating cards -->
+  <div class="hero-float hf-1">
+    <div class="hf-card">
+      <div class="bc-label" style="margin-bottom:8px">الإيرادات اليوم</div>
+      <div class="hf-val" style="color:var(--gold)">١٢٫٥K</div>
+      <div class="hf-lbl">جنيه مصري</div>
+      <div class="hf-trend" style="color:#10b981">↑ +١٨٪ أمس</div>
+      <div class="hf-bar"><div class="hf-fill" style="background:linear-gradient(to right,var(--gold),#ff9f43)"></div></div>
+    </div>
+  </div>
+  <div class="hero-float hf-2">
+    <div class="hf-card">
+      <div class="bc-label" style="margin-bottom:8px">الغرف النشطة</div>
+      <div class="hf-val" style="color:var(--accent)">٢٣ / ٣٠</div>
+      <div class="hf-lbl">معدل إشغال ٧٧٪</div>
+      <div class="hf-trend" style="color:#10b981">↑ رائع!</div>
+      <div class="hf-bar"><div class="hf-fill" style="background:linear-gradient(to right,var(--accent),#7c3aed);width:77%"></div></div>
+    </div>
+  </div>
+
+  <div class="hero-inner">
+    <div class="hero-pill">
+      <div class="pill-anim"></div>
+      الإصدار ٢.٠ — مدعوم بالذكاء الاصطناعي
+    </div>
+
+    <h1 class="hero-title">
+      <span class="line-gold">Co_Workspace</span>
+      <span class="line-outline">نظام ذكي لاداره workspace</span>
+    </h1>
+
+    <div class="hero-name-card">
+      <div class="name-avatar">ع</div>
+      <div class="name-info">
+        <span class="name-main">المهندس عبدالرحمن قلقيله</span>
+        <span class="name-role">طالب بكلية الحاسبات والذكاء الاصطناعي</span>
+      </div>
+    </div>
+
+    <p class="hero-desc">
+      منظومة متكاملة تجمع إدارة العملاء، الغرف، الموظفين، الحسابات والتقارير — مع تحليلات ذكاء اصطناعي حقيقي لتنمية أعمالك
+    </p>
+
+    <div class="hero-cta">
+      <button class="btn-hero-main" onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth'});ripple(event,this)">
+        <span>تواصل معنا الآن ←</span>
+      </button>
+      <button class="btn-hero-ghost" onclick="document.getElementById('dashboard').scrollIntoView({behavior:'smooth'})">
+        عرض لوحة التحكم
+      </button>
+    </div>
+
+    <div class="contact-strip">
+      <a href="https://wa.me/201013276086" class="contact-btn whatsapp" target="_blank">
+        <div class="contact-icon wa-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="#25d366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.122 1.534 5.853L.054 23.486a.5.5 0 00.596.636l5.82-1.527A11.944 11.944 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.886 0-3.659-.518-5.176-1.423l-.369-.224-3.832 1.005 1.022-3.727-.242-.386A9.961 9.961 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+        </div>
+        واتساب
+      </a>
+      <a href="https://www.facebook.com/abdelrhmankolkala?locale=ar_AR" class="contact-btn facebook" target="_blank">
+        <div class="contact-icon fb-icon-wrap">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="#1877f2"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+        </div>
+        فيسبوك
+      </a>
+    </div>
+  </div>
+
+  <div class="scroll-hint">
+    <div class="scroll-line"></div>
+    <span>scroll</span>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-section">
+  <div class="marquee-track" id="marqueeTrack">
+    <div class="marquee-item"><span class="mi-num">+5000</span><span class="mi-txt">عملية يومياً</span><div class="mi-sep"></div></div>
+    <div class="marquee-item"><span class="mi-num">10</span><span class="mi-txt">وحدة متكاملة</span><div class="mi-sep"></div></div>
+    <div class="marquee-item"><span class="mi-num">99.9%</span><span class="mi-txt">وقت تشغيل</span><div class="mi-sep"></div></div>
+    <div class="marquee-item"><span class="mi-num">AI</span><span class="mi-txt">ذكاء اصطناعي حقيقي</span><div class="mi-sep"></div></div>
+    <div class="marquee-item"><span class="mi-num">SQLite</span><span class="mi-txt">بيانات محلية آمنة</span><div class="mi-sep"></div></div>
+    <div class="marquee-item"><span class="mi-num">24/7</span><span class="mi-txt">دعم فني متواصل</span><div class="mi-sep"></div></div>
+    <div class="marquee-item"><span class="mi-num">Excel</span><span class="mi-txt">تصدير تقارير فورية</span><div class="mi-sep"></div></div>
+    <div class="marquee-item"><span class="mi-num">+5000</span><span class="mi-txt">عملية يومياً</span><div class="mi-sep"></div></div>
+    <div class="marquee-item"><span class="mi-num">10</span><span class="mi-txt">وحدة متكاملة</span><div class="mi-sep"></div></div>
+    <div class="marquee-item"><span class="mi-num">99.9%</span><span class="mi-txt">وقت تشغيل</span><div class="mi-sep"></div></div>
+    <div class="marquee-item"><span class="mi-num">AI</span><span class="mi-txt">ذكاء اصطناعي حقيقي</span><div class="mi-sep"></div></div>
+    <div class="marquee-item"><span class="mi-num">SQLite</span><span class="mi-txt">بيانات محلية آمنة</span><div class="mi-sep"></div></div>
+    <div class="marquee-item"><span class="mi-num">24/7</span><span class="mi-txt">دعم فني متواصل</span><div class="mi-sep"></div></div>
+    <div class="marquee-item"><span class="mi-num">Excel</span><span class="mi-txt">تصدير تقارير فورية</span><div class="mi-sep"></div></div>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section id="features">
+<div class="container">
+  <div class="feat-header reveal">
+    <div>
+      <span class="sec-eyebrow eyebrow-gold">الميزات الرئيسية</span>
+      <h2 class="sec-title">كل ما يحتاجه مركزك<br>في منظومة واحدة</h2>
+      <div class="sep-line"></div>
+    </div>
+    <p class="feat-right-text">Co_Workspace يضم أكثر من ١٠ وحدة متكاملة مصممة خصيصاً لمراكز الألعاب — من أول تسجيل العميل لحين تصدير التقارير الشهرية</p>
+  </div>
+
+  <div class="feat-grid">
+    <div class="feat-card wide reveal rd1" style="--card-accent:#f5c842" onmousemove="cardGlow(event,this)">
+      <div class="fc-badge badge-ai">Artificial Intelligence</div>
+      <div class="fc-icon" style="--card-accent:rgba(124,58,237,0.6)">🤖</div>
+      <div class="fc-title">تحليلات الذكاء الاصطناعي</div>
+      <div class="fc-desc">تجميع العملاء تلقائياً بخوارزميات clustering، تحليل الأنماط السلوكية، وتوصيات مخصصة لزيادة الإيرادات وتحسين تجربة العملاء بذكاء حقيقي</div>
+    </div>
+    <div class="feat-card reveal rd2" style="--card-accent:#00d4ff" onmousemove="cardGlow(event,this)">
+      <div class="fc-icon" style="--card-accent:rgba(0,212,255,0.6)">👤</div>
+      <div class="fc-title">إدارة العملاء</div>
+      <div class="fc-desc">تسجيل كامل مع الباقات، بحث فوري، وسجل تفصيلي للمعاملات</div>
+    </div>
+    <div class="feat-card reveal rd3" style="--card-accent:#10b981" onmousemove="cardGlow(event,this)">
+      <div class="fc-badge badge-new">جديد</div>
+      <div class="fc-icon" style="--card-accent:rgba(16,185,129,0.6)">📊</div>
+      <div class="fc-title">لوحة تحليلات حية</div>
+      <div class="fc-desc">رسوم بيانية تفاعلية للإيرادات اليومية والشهرية في الوقت الفعلي</div>
+    </div>
+    <div class="feat-card reveal rd1" style="--card-accent:#a78bfa" onmousemove="cardGlow(event,this)">
+      <div class="fc-icon" style="--card-accent:rgba(167,139,250,0.6)">🏠</div>
+      <div class="fc-title">إدارة الغرف</div>
+      <div class="fc-desc">دخول/خروج تلقائي، حساب الوقت والتكلفة، غرف يومية وباقات مدفوعة مسبقاً</div>
+    </div>
+    <div class="feat-card reveal rd2" style="--card-accent:#f59e0b" onmousemove="cardGlow(event,this)">
+      <div class="fc-icon" style="--card-accent:rgba(245,159,11,0.6)">💰</div>
+      <div class="fc-title">إدارة الحسابات</div>
+      <div class="fc-desc">مدفوعات، ديون، إيرادات، مراجعة مالية شاملة مع سجل كامل</div>
+    </div>
+    <div class="feat-card reveal rd3" style="--card-accent:#ef4444" onmousemove="cardGlow(event,this)">
+      <div class="fc-icon" style="--card-accent:rgba(239,68,68,0.6)">👷</div>
+      <div class="fc-title">إدارة الموظفين</div>
+      <div class="fc-desc">حضور، انصراف، مبيعات فردية، صلاحيات متدرجة وتقارير أداء</div>
+    </div>
+    <div class="feat-card reveal rd4" style="--card-accent:#00d4ff" onmousemove="cardGlow(event,this)">
+      <div class="fc-icon" style="--card-accent:rgba(0,212,255,0.6)">🔒</div>
+      <div class="fc-title">أمان وحماية</div>
+      <div class="fc-desc">تشفير محلي، نسخ احتياطي تلقائي كل ٥ دقائق، وسجلات مراجعة كاملة</div>
+    </div>
+    <div class="feat-card wide reveal rd5" style="--card-accent:#10b981" onmousemove="cardGlow(event,this)">
+      <div class="fc-icon" style="--card-accent:rgba(16,185,129,0.6)">📁</div>
+      <div class="fc-title">تقارير وتصدير</div>
+      <div class="fc-desc">تقارير يومية وشهرية وسنوية — قابلة للتصدير بصيغ Excel و PDF فورياً، مع فلترة متقدمة حسب الفترة أو الموظف أو العميل أو الغرفة</div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- BENTO DASHBOARD -->
+<section id="dashboard" style="background:rgba(255,255,255,0.01)">
+<div class="container">
+  <div class="text-center reveal" style="text-align:center">
+    <span class="sec-eyebrow eyebrow-cyan">لوحة التحكم</span>
+    <h2 class="sec-title" style="text-align:center">إدارة أعمالك بلمسة واحدة</h2>
+    <div class="sep-line" style="margin:20px auto"></div>
+  </div>
+  <div class="bento-grid reveal">
+
+    <!-- Big revenue -->
+    <div class="bento-card gc-4">
+      <div class="bc-label">إيرادات اليوم</div>
+      <div class="bc-big-num" style="color:var(--gold)">١٢,٥٠٠</div>
+      <div class="bc-sub">جنيه مصري</div>
+      <span class="bc-trend-badge trend-up-badge">↑ ١٨٪ مقارنة بالأمس</span>
+      <div class="mini-bars" id="revBars"></div>
+    </div>
+
+    <!-- Active rooms -->
+    <div class="bento-card gc-4">
+      <div class="bc-label">الغرف النشطة الآن</div>
+      <div class="bc-big-num" style="color:var(--accent)">٢٣</div>
+      <div class="bc-sub">من أصل ٣٠ غرفة</div>
+      <span class="bc-trend-badge trend-up-badge">إشغال ٧٧٪</span>
+      <div style="margin-top:16px">
+        <svg width="100%" height="8" viewBox="0 0 100 8">
+          <rect width="100" height="8" rx="4" fill="rgba(255,255,255,0.05)"/>
+          <rect width="77" height="8" rx="4" fill="url(#rg)"/>
+          <defs><linearGradient id="rg"><stop stop-color="#00d4ff"/><stop offset="1" stop-color="#7c3aed"/></linearGradient></defs>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Live clock -->
+    <div class="bento-card gc-4" style="background:linear-gradient(135deg,rgba(245,200,66,0.06),rgba(245,200,66,0.02))">
+      <div class="bc-label">الوقت الحالي</div>
+      <div class="live-clock" id="liveClock">--:--:--</div>
+      <div class="live-date" id="liveDate">--</div>
+      <div style="margin-top:16px;display:flex;gap:8px">
+        <span class="bc-trend-badge" style="background:rgba(245,200,66,0.1);color:var(--gold);border-color:rgba(245,200,66,0.2)">نظام نشط ✓</span>
+      </div>
+    </div>
+
+    <!-- Rooms grid -->
+    <div class="bento-card gc-8">
+      <div class="bc-label">خريطة الغرف — الطابق الأول</div>
+      <div class="rooms-bento">
+        <div class="rb rb-on"><span class="rb-num">١</span>نشط</div>
+        <div class="rb rb-on"><span class="rb-num">٢</span>نشط</div>
+        <div class="rb rb-off"><span class="rb-num">٣</span>فارغ</div>
+        <div class="rb rb-on"><span class="rb-num">٤</span>نشط</div>
+        <div class="rb rb-soon"><span class="rb-num">٥</span>قريباً</div>
+        <div class="rb rb-on"><span class="rb-num">٦</span>نشط</div>
+        <div class="rb rb-off"><span class="rb-num">٧</span>فارغ</div>
+        <div class="rb rb-on"><span class="rb-num">٨</span>نشط</div>
+        <div class="rb rb-on"><span class="rb-num">٩</span>نشط</div>
+        <div class="rb rb-on"><span class="rb-num">١٠</span>نشط</div>
+        <div class="rb rb-off"><span class="rb-num">١١</span>فارغ</div>
+        <div class="rb rb-on"><span class="rb-num">١٢</span>نشط</div>
+        <div class="rb rb-on"><span class="rb-num">١٣</span>نشط</div>
+        <div class="rb rb-soon"><span class="rb-num">١٤</span>قريباً</div>
+        <div class="rb rb-off"><span class="rb-num">١٥</span>فارغ</div>
+      </div>
+      <div style="display:flex;gap:16px;margin-top:14px">
+        <span style="font-size:11px;color:#10b981">● نشط (١٠)</span>
+        <span style="font-size:11px;color:rgba(255,255,255,0.3)">● فارغ (٣)</span>
+        <span style="font-size:11px;color:var(--gold)">● قريباً (٢)</span>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="bento-card gc-4">
+      <div class="bc-label">إحصائيات سريعة</div>
+      <div style="display:flex;flex-direction:column;gap:14px;margin-top:8px">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:13px;color:rgba(255,255,255,0.5)">عملاء اليوم</span>
+          <span style="font-size:20px;font-weight:900;color:var(--accent)">١٤٢</span>
+        </div>
+        <div style="height:1px;background:rgba(255,255,255,0.04)"></div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:13px;color:rgba(255,255,255,0.5)">موظفون حاضرون</span>
+          <span style="font-size:20px;font-weight:900;color:#a78bfa">٧</span>
+        </div>
+        <div style="height:1px;background:rgba(255,255,255,0.04)"></div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:13px;color:rgba(255,255,255,0.5)">طلبات منتظرة</span>
+          <span style="font-size:20px;font-weight:900;color:#f59e0b">٥</span>
+        </div>
+        <div style="height:1px;background:rgba(255,255,255,0.04)"></div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:13px;color:rgba(255,255,255,0.5)">نسخ احتياطي</span>
+          <span class="bc-trend-badge trend-up-badge" style="font-size:11px">محدّث ✓</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Activity -->
+    <div class="bento-card gc-7">
+      <div class="bc-label">آخر الأنشطة</div>
+      <div class="activity-feed">
+        <div class="af-item"><div class="af-dot" style="background:#10b981"></div><span class="af-text">عميل جديد: أحمد محمد — باقة شهرية بريميوم</span><span class="af-time">٢ دقيقة</span></div>
+        <div class="af-item"><div class="af-dot" style="background:var(--gold)"></div><span class="af-text">دفع إيجار: غرفة ٥ — جلسة ٢ ساعة</span><span class="af-time">٨ دقائق</span></div>
+        <div class="af-item"><div class="af-dot" style="background:var(--accent)"></div><span class="af-text">تجديد باقة: محمد علي — الباقة الذهبية</span><span class="af-time">١٥ دقيقة</span></div>
+        <div class="af-item"><div class="af-dot" style="background:#a78bfa"></div><span class="af-text">تقرير يومي: تصدير Excel تم بنجاح</span><span class="af-time">٢٠ دقيقة</span></div>
+        <div class="af-item"><div class="af-dot" style="background:#10b981"></div><span class="af-text">حضور موظف: عمر سالم — ٩:٠٠ صباحاً</span><span class="af-time">ساعة</span></div>
+      </div>
+    </div>
+
+    <!-- AI insight -->
+    <div class="bento-card gc-5" style="background:linear-gradient(135deg,rgba(124,58,237,0.08),rgba(124,58,237,0.02));border-color:rgba(124,58,237,0.15)">
+      <div class="bc-label" style="color:rgba(167,139,250,0.7)">توصية الذكاء الاصطناعي</div>
+      <div style="font-size:15px;color:#fff;font-weight:700;margin:12px 0 8px">أوقات الذروة: ٦ م — ١١ م</div>
+      <div style="font-size:13px;color:rgba(255,255,255,0.5);line-height:1.8">تحليل ٣٠ يوم يُظهر أن ٧٨٪ من الإيرادات تأتي في هذا النطاق. يُنصح بزيادة الموظفين خلاله.</div>
+      <div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap">
+        <span class="bc-trend-badge" style="background:rgba(124,58,237,0.12);color:#a78bfa;border-color:rgba(124,58,237,0.2)">٣٠ يوم بيانات</span>
+        <span class="bc-trend-badge trend-up-badge">دقة ٩٢٪</span>
+      </div>
+    </div>
+
+  </div><!-- /bento-grid -->
+</div>
+</section>
+
+<!-- SCREENSHOTS GALLERY -->
+<section id="screenshots" style="background:rgba(255,255,255,0.01);overflow:hidden">
+<div class="container">
+  <div style="text-align:center" class="reveal">
+    <span class="sec-eyebrow eyebrow-cyan">لقطات النظام</span>
+    <h2 class="sec-title" style="text-align:center">شوف النظام بنفسك</h2>
+    <div class="sep-line" style="margin:20px auto"></div>
+    <p class="sec-desc" style="text-align:center;max-width:540px;margin:0 auto 56px;color:rgba(255,255,255,0.45);font-size:14px">لقطات حقيقية من داخل النظام — تحليلات AI، إيرادات، مبيعات الطلبات، وتقارير الباقات</p>
+  </div>
+
+  <div class="ss-grid reveal">
+    <!-- Screenshot card 1 -->
+    <div class="ss-card ss-wide" onmousemove="cardGlow(event,this)" style="--card-accent:#f5c842">
+      <div class="ss-badge" style="background:rgba(245,200,66,0.15);color:var(--gold);border-color:rgba(245,200,66,0.3)">📦 تحليل الباقات</div>
+      <div class="ss-mockup">
+        <div class="ss-win-bar"><div class="ss-dot" style="background:#ef4444"></div><div class="ss-dot" style="background:#f59e0b"></div><div class="ss-dot" style="background:#10b981"></div><span style="color:rgba(255,255,255,0.3);font-size:11px;margin-right:auto">Package Analysis</span></div>
+        <div class="ss-table">
+          <div class="ss-thead"><span>اسم الباقة</span><span>المبيعات</span><span>الإيراد</span><span>الديون</span></div>
+          <div class="ss-trow trow-gold"><span>Standard Package</span><span>11</span><span style="color:#10b981">4,200</span><span style="color:#ef4444">1,300</span></div>
+          <div class="ss-trow"><span>AK</span><span>10</span><span style="color:#10b981">1,450</span><span style="color:#ef4444">1,050</span></div>
+          <div class="ss-trow"><span>Daily Package</span><span>4</span><span style="color:#10b981">1,100</span><span style="color:#ef4444">100</span></div>
+          <div class="ss-trow"><span>Weekly Unlimited</span><span>3</span><span style="color:#10b981">1,400</span><span style="color:#ef4444">1,600</span></div>
+        </div>
+        <div class="ss-stats-row">
+          <div class="ss-stat-pill" style="background:rgba(16,185,129,0.12);border-color:rgba(16,185,129,0.3);color:#10b981">💰 إجمالي الإيراد: 9,550 EGP</div>
+          <div class="ss-stat-pill" style="background:rgba(239,68,68,0.1);border-color:rgba(239,68,68,0.3);color:#ef4444">⚠️ إجمالي الديون: 6,230 EGP</div>
+        </div>
+        <div class="ss-bar-preview">
+          <div class="ss-bar-item"><div class="ss-bar-fill-anim" style="height:88%;background:var(--gold)"></div><span>St.Pkg</span></div>
+          <div class="ss-bar-item"><div class="ss-bar-fill-anim" style="height:72%;background:#00d4ff;animation-delay:0.1s"></div><span>AK</span></div>
+          <div class="ss-bar-item"><div class="ss-bar-fill-anim" style="height:56%;background:#a78bfa;animation-delay:0.2s"></div><span>قلقيله</span></div>
+          <div class="ss-bar-item"><div class="ss-bar-fill-anim" style="height:38%;background:#10b981;animation-delay:0.3s"></div><span>Daily</span></div>
+          <div class="ss-bar-item"><div class="ss-bar-fill-anim" style="height:28%;background:#f59e0b;animation-delay:0.4s"></div><span>Weekly</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Screenshot card 2 -->
+    <div class="ss-card" onmousemove="cardGlow(event,this)" style="--card-accent:#00d4ff">
+      <div class="ss-badge" style="background:rgba(0,212,255,0.12);color:var(--accent);border-color:rgba(0,212,255,0.3)">📊 تحليل الإيرادات الأسبوعية</div>
+      <div class="ss-mockup">
+        <div class="ss-win-bar"><div class="ss-dot" style="background:#ef4444"></div><div class="ss-dot" style="background:#f59e0b"></div><div class="ss-dot" style="background:#10b981"></div><span style="color:rgba(255,255,255,0.3);font-size:11px;margin-right:auto">لوحة التحليلات</span></div>
+        <div style="background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.15);border-radius:10px;padding:12px;margin-bottom:12px">
+          <div style="font-size:10px;color:rgba(255,255,255,0.4);margin-bottom:4px">الأسبوع: 30 أبريل — 6 مايو</div>
+          <div style="font-size:22px;font-weight:900;color:#10b981">10,684 EGP</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.4)">إجمالي الإيرادات الأسبوعية</div>
+        </div>
+        <div class="ss-revenue-chart">
+          <div class="ss-rev-bar" style="height:5%"><span class="ss-rev-day">أحد</span></div>
+          <div class="ss-rev-bar" style="height:5%"><span class="ss-rev-day">إثن</span></div>
+          <div class="ss-rev-bar" style="height:5%"><span class="ss-rev-day">ثلث</span></div>
+          <div class="ss-rev-bar" style="height:15%"><span class="ss-rev-day">أرب</span></div>
+          <div class="ss-rev-bar ss-rev-peak" style="height:95%"><span class="ss-rev-day">خمس</span></div>
+          <div class="ss-rev-bar" style="height:55%"><span class="ss-rev-day">جمع</span></div>
+          <div class="ss-rev-bar" style="height:3%"><span class="ss-rev-day">سبت</span></div>
+        </div>
+        <div class="ss-src-row">
+          <div class="ss-src"><div style="width:8px;height:8px;border-radius:50%;background:#3b82f6"></div><span>غرف</span><strong style="color:#3b82f6">3,834</strong></div>
+          <div class="ss-src"><div style="width:8px;height:8px;border-radius:50%;background:#10b981"></div><span>طلبات</span><strong style="color:#10b981">1,830</strong></div>
+          <div class="ss-src"><div style="width:8px;height:8px;border-radius:50%;background:#f59e0b"></div><span>باقات</span><strong style="color:#f59e0b">5,020</strong></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Screenshot card 3 -->
+    <div class="ss-card" onmousemove="cardGlow(event,this)" style="--card-accent:#10b981">
+      <div class="ss-badge" style="background:rgba(16,185,129,0.1);color:#10b981;border-color:rgba(16,185,129,0.3)">🍹 تحليل الطلبات والمبيعات</div>
+      <div class="ss-mockup">
+        <div class="ss-win-bar"><div class="ss-dot" style="background:#ef4444"></div><div class="ss-dot" style="background:#f59e0b"></div><div class="ss-dot" style="background:#10b981"></div><span style="color:rgba(255,255,255,0.3);font-size:11px;margin-right:auto">تحليل الطلبات</span></div>
+        <div style="background:rgba(0,212,255,0.05);border:1px solid rgba(0,212,255,0.1);border-radius:10px;padding:10px;margin-bottom:10px;display:flex;gap:16px">
+          <div><div style="font-size:10px;color:rgba(255,255,255,0.4)">إجمالي الإيرادات</div><div style="font-size:18px;font-weight:900;color:var(--gold)">3,840 EGP</div></div>
+          <div><div style="font-size:10px;color:rgba(255,255,255,0.4)">الكميات المباعة</div><div style="font-size:18px;font-weight:900;color:var(--accent)">88</div></div>
+        </div>
+        <div class="ss-products">
+          <div class="ss-prod"><span class="ss-prod-name">🍕 pizza marg</span><div class="ss-prod-bar"><div style="width:100%;height:100%;background:linear-gradient(to right,#10b981,#00d4ff);border-radius:4px"></div></div><span class="ss-prod-val" style="color:#10b981">1,600</span></div>
+          <div class="ss-prod"><span class="ss-prod-name">🥤 Soft Drink</span><div class="ss-prod-bar"><div style="width:9.4%;height:100%;background:#3b82f6;border-radius:4px"></div></div><span class="ss-prod-val">150</span></div>
+          <div class="ss-prod"><span class="ss-prod-name">🍔 Burger</span><div class="ss-prod-bar"><div style="width:40.6%;height:100%;background:#a78bfa;border-radius:4px"></div></div><span class="ss-prod-val">650</span></div>
+          <div class="ss-prod"><span class="ss-prod-name">🧃 Juice</span><div class="ss-prod-bar"><div style="width:12.5%;height:100%;background:#f59e0b;border-radius:4px"></div></div><span class="ss-prod-val">200</span></div>
+          <div class="ss-prod"><span class="ss-prod-name">🍕 Pizza</span><div class="ss-prod-bar"><div style="width:40%;height:100%;background:#ef4444;border-radius:4px"></div></div><span class="ss-prod-val">640</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Screenshot card 4 - AI Clustering -->
+    <div class="ss-card ss-wide" onmousemove="cardGlow(event,this)" style="--card-accent:#a78bfa">
+      <div class="ss-badge" style="background:rgba(124,58,237,0.15);color:#a78bfa;border-color:rgba(124,58,237,0.3)">🤖 AI — تجميع العملاء بالذكاء الاصطناعي</div>
+      <div class="ss-mockup" style="display:flex;gap:16px;align-items:flex-start">
+        <div style="flex:1">
+          <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:10px">توزيع العملاء بالمجموعات</div>
+          <!-- Pie chart mockup -->
+          <div style="position:relative;width:120px;height:120px;margin:0 auto 12px">
+            <svg viewBox="0 0 36 36" style="width:120px;height:120px;transform:rotate(-90deg)">
+              <circle cx="18" cy="18" r="15.9" fill="transparent" stroke="#f59e0b" stroke-width="3" stroke-dasharray="72.4 27.6"/>
+              <circle cx="18" cy="18" r="15.9" fill="transparent" stroke="#3b82f6" stroke-width="3" stroke-dasharray="17.2 82.8" stroke-dashoffset="-72.4"/>
+              <circle cx="18" cy="18" r="15.9" fill="transparent" stroke="#a78bfa" stroke-width="3" stroke-dasharray="3.4 96.6" stroke-dashoffset="-89.6"/>
+              <circle cx="18" cy="18" r="15.9" fill="transparent" stroke="#10b981" stroke-width="3" stroke-dasharray="3.4 96.6" stroke-dashoffset="-93"/>
+              <circle cx="18" cy="18" r="15.9" fill="transparent" stroke="#ef4444" stroke-width="3" stroke-dasharray="3.4 96.6" stroke-dashoffset="-96.4"/>
+            </svg>
+            <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center"><div style="font-size:14px;font-weight:900;color:#fff">29</div><div style="font-size:9px;color:rgba(255,255,255,0.4)">عميل</div></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:5px">
+            <div style="display:flex;align-items:center;gap:6px;font-size:10px"><div style="width:8px;height:8px;border-radius:2px;background:#f59e0b"></div><span style="color:rgba(255,255,255,0.6)">Cluster 2</span><strong style="color:#f59e0b;margin-right:auto">72.4%</strong></div>
+            <div style="display:flex;align-items:center;gap:6px;font-size:10px"><div style="width:8px;height:8px;border-radius:2px;background:#ef4444"></div><span style="color:rgba(255,255,255,0.6)">Cluster 4</span><strong style="color:#ef4444;margin-right:auto">17.2%</strong></div>
+            <div style="display:flex;align-items:center;gap:6px;font-size:10px"><div style="width:8px;height:8px;border-radius:2px;background:#3b82f6"></div><span style="color:rgba(255,255,255,0.6)">Cluster 1</span><strong style="color:#3b82f6;margin-right:auto">3.4%</strong></div>
+          </div>
+        </div>
+        <div style="flex:2">
+          <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:10px">متوسط المقاييس بالمجموعة</div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div class="ai-metric"><span style="color:rgba(255,255,255,0.5);font-size:11px;width:60px">Cluster 2</span><div class="ai-bar-wrap"><div style="width:55%;height:100%;background:linear-gradient(to right,#3b82f6,#60a5fa);border-radius:3px"></div></div><span style="color:#3b82f6;font-size:11px">6,200 EGP</span></div>
+            <div class="ai-metric"><span style="color:rgba(255,255,255,0.5);font-size:11px;width:60px">Cluster 3</span><div class="ai-bar-wrap"><div style="width:82%;height:100%;background:linear-gradient(to right,#f59e0b,#fbbf24);border-radius:3px"></div></div><span style="color:#f59e0b;font-size:11px">9,550 EGP</span></div>
+            <div class="ai-metric"><span style="color:rgba(255,255,255,0.5);font-size:11px;width:60px">Cluster 4</span><div class="ai-bar-wrap"><div style="width:68%;height:100%;background:linear-gradient(to right,#10b981,#34d399);border-radius:3px"></div></div><span style="color:#10b981;font-size:11px">9,500 EGP</span></div>
+            <div class="ai-metric"><span style="color:rgba(255,255,255,0.5);font-size:11px;width:60px">Cluster 1</span><div class="ai-bar-wrap"><div style="width:19%;height:100%;background:linear-gradient(to right,#a78bfa,#c4b5fd);border-radius:3px"></div></div><span style="color:#a78bfa;font-size:11px">2,700 EGP</span></div>
+          </div>
+          <div style="margin-top:14px;padding:10px;background:rgba(124,58,237,0.08);border:1px solid rgba(124,58,237,0.2);border-radius:8px">
+            <div style="font-size:10px;color:#a78bfa;font-weight:700;margin-bottom:4px">🤖 تحليل AI</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.5);line-height:1.7">خوارزمية K-Means تُجمّع العملاء تلقائياً حسب سلوك الإنفاق وساعات الاستخدام</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- MODULES -->
+<section id="modules">
+<div class="container">
+  <div style="text-align:center" class="reveal">
+    <span class="sec-eyebrow eyebrow-purple">وحدات النظام</span>
+    <h2 class="sec-title" style="text-align:center">١٠ وحدات تغطي كل جانب</h2>
+    <div class="sep-line" style="margin:20px auto"></div>
+  </div>
+  <div class="modules-grid">
+    <div class="mod-card reveal rd1" style="--mc:#f5c842"><span class="mod-em">👤</span><div class="mod-name">العملاء</div><div class="mod-detail">تسجيل، بحث، تعديل، حذف وسجل معاملات كامل</div></div>
+    <div class="mod-card reveal rd2" style="--mc:#00d4ff"><span class="mod-em">🏠</span><div class="mod-name">الغرف</div><div class="mod-detail">دخول/خروج تلقائي، غرف يومية وباقات مدفوعة</div></div>
+    <div class="mod-card reveal rd3" style="--mc:#a78bfa"><span class="mod-em">👷</span><div class="mod-name">الموظفون</div><div class="mod-detail">حضور، أداء، رواتب وصلاحيات متدرجة</div></div>
+    <div class="mod-card reveal rd4" style="--mc:#10b981"><span class="mod-em">💰</span><div class="mod-name">الحسابات</div><div class="mod-detail">مدفوعات، ديون، إيرادات ومراجعة مالية شاملة</div></div>
+    <div class="mod-card reveal rd5" style="--mc:#ef4444"><span class="mod-em">🍹</span><div class="mod-name">الطلبات</div><div class="mod-detail">مشروبات وإضافات مرتبطة بحسابات العملاء</div></div>
+    <div class="mod-card reveal rd1" style="--mc:#f59e0b"><span class="mod-em">📊</span><div class="mod-name">التقارير</div><div class="mod-detail">تقارير يومية وشهرية قابلة للتصدير</div></div>
+    <div class="mod-card reveal rd2" style="--mc:#00d4ff"><span class="mod-em">📈</span><div class="mod-name">التحليلات</div><div class="mod-detail">رسوم بيانية تفاعلية لاتجاهات الأعمال</div></div>
+    <div class="mod-card reveal rd3" style="--mc:#a78bfa"><span class="mod-em">🤖</span><div class="mod-name">الذكاء الاصطناعي</div><div class="mod-detail">تجميع العملاء وتوصيات ذكية مخصصة</div></div>
+    <div class="mod-card reveal rd4" style="--mc:#10b981"><span class="mod-em">⚙️</span><div class="mod-name">الإعدادات</div><div class="mod-detail">باقات، أسعار، تخصيص كامل للبيئة</div></div>
+    <div class="mod-card reveal rd5" style="--mc:#f5c842"><span class="mod-em">🗄️</span><div class="mod-name">إدارة البيانات</div><div class="mod-detail">نسخ احتياطي، استعادة وتصدير كامل</div></div>
+  </div>
+</div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="hiw-section" style="background:rgba(255,255,255,0.01)">
+<div class="hiw-inner">
+  <div class="reveal">
+    <span class="sec-eyebrow eyebrow-gold">كيف يعمل؟</span>
+    <h2 class="sec-title">ابدأ في ثلاث<br>خطوات بسيطة</h2>
+    <div class="sep-line"></div>
+    <div class="hiw-steps">
+      <div class="step-row">
+        <div class="step-left"><div class="step-circle">١</div><div class="step-vert-line"></div></div>
+        <div class="step-content"><div class="step-t">تثبيت فوري</div><div class="step-d">تنزيل البرنامج وتشغيله — قاعدة البيانات تُنشأ تلقائياً دون إعدادات معقدة</div></div>
+      </div>
+      <div class="step-row">
+        <div class="step-left"><div class="step-circle">٢</div><div class="step-vert-line"></div></div>
+        <div class="step-content"><div class="step-t">إضافة الباقات والفريق</div><div class="step-d">حدد باقاتك وأسعارك وأضف فريق العمل من لوحة الإعدادات البسيطة</div></div>
+      </div>
+      <div class="step-row">
+        <div class="step-left"><div class="step-circle">٣</div></div>
+        <div class="step-content"><div class="step-t">إدارة احترافية فورية</div><div class="step-d">سجّل العملاء، أدر الغرف، وتابع الإيرادات — بيانات مؤمنة تلقائياً كل ٥ دقائق</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="hiw-visual reveal rd3">
+    <div class="hiw-screen">
+      <div class="hs-top">
+        <div class="hs-dot" style="background:#ef4444"></div>
+        <div class="hs-dot" style="background:#f59e0b"></div>
+        <div class="hs-dot" style="background:#10b981"></div>
+        <div class="hs-input"></div>
+      </div>
+      <div class="hs-cards">
+        <div class="hs-card"><div class="hs-num" style="color:var(--gold)">١٢٫٥K</div><div class="hs-lbl">إيرادات اليوم</div><div class="hs-bar-row"><div class="hs-bar-fill"></div></div></div>
+        <div class="hs-card"><div class="hs-num" style="color:var(--accent)">٢٣</div><div class="hs-lbl">غرفة نشطة</div><div class="hs-bar-row"><div class="hs-bar-fill" style="animation-delay:0.5s"></div></div></div>
+      </div>
+      <div class="hs-list">
+        <div class="hs-li"><div class="hs-li-dot" style="background:#10b981"></div><span class="hs-li-text">أحمد محمد — باقة شهرية</span><span class="hs-li-chip chip-green">نشط</span></div>
+        <div class="hs-li"><div class="hs-li-dot" style="background:var(--gold)"></div><span class="hs-li-text">غرفة ٥ — جلسة جارية</span><span class="hs-li-chip chip-gold">١:٢٣</span></div>
+        <div class="hs-li"><div class="hs-li-dot" style="background:var(--accent)"></div><span class="hs-li-text">تقرير يومي — جاهز</span><span class="hs-li-chip chip-cyan">تصدير</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+<div class="container contact-section">
+  <div class="reveal">
+    <span class="sec-eyebrow eyebrow-gold">تواصل معنا</span>
+    <h2 class="sec-title" style="text-align:center">جاهز لتجربة النظام؟</h2>
+    <div class="sep-line" style="margin:20px auto"></div>
+    <p class="sec-desc" style="text-align:center;margin:0 auto 0">تواصل مع المهندس عبدالرحمن مباشرةً عبر واتساب أو فيسبوك للحصول على المزيد من المعلومات</p>
+  </div>
+
+  <!-- Builder card -->
+  <div class="reveal" style="display:flex;justify-content:center;margin:48px 0 24px">
+    <div style="background:rgba(8,14,46,0.8);border:1px solid rgba(245,200,66,0.2);border-radius:22px;padding:32px 40px;display:flex;align-items:center;gap:24px;max-width:560px;width:100%">
+      <div style="width:70px;height:70px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--accent2));display:grid;place-items:center;font-size:28px;font-weight:900;color:#fff;flex-shrink:0;box-shadow:0 8px 24px rgba(245,200,66,0.3)">ع</div>
+      <div>
+        <div style="font-size:20px;font-weight:900;color:var(--gold-light);margin-bottom:4px">المهندس عبدالرحمن قلقيله</div>
+        <div style="font-size:14px;color:rgba(255,255,255,0.5);margin-bottom:10px">طالب بكلية الحاسبات والذكاء الاصطناعي</div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.35)">مطوّر نظام Co_Workspace</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="contact-cards reveal rd2">
+    <a href="https://wa.me/201013276086" class="contact-card wa" target="_blank">
+      <div class="cc-icon cc-wa-bg">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="#25d366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.122 1.534 5.853L.054 23.486a.5.5 0 00.596.636l5.82-1.527A11.944 11.944 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.886 0-3.659-.518-5.176-1.423l-.369-.224-3.832 1.005 1.022-3.727-.242-.386A9.961 9.961 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+      </div>
+      <div class="cc-name">واتساب</div>
+      <div class="cc-handle">01013276086</div>
+    </a>
+    <a href="https://www.facebook.com/abdelrhmankolkala?locale=ar_AR" class="contact-card fb" target="_blank">
+      <div class="cc-icon cc-fb-bg">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="#1877f2"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+      </div>
+      <div class="cc-name">فيسبوك</div>
+      <div class="cc-handle">Abdelrhman Kolkela</div>
+    </a>
+    <a href="https://www.linkedin.com/in/abdelrhman-mustafa-kolkela-27b290318" class="contact-card li" target="_blank" style="border-color:rgba(10,102,194,0.15)">
+      <div class="cc-icon" style="background:rgba(10,102,194,0.12);border-radius:16px;width:64px;height:64px;display:grid;place-items:center">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="#0a66c2"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+      </div>
+      <div class="cc-name">لينكد إن</div>
+      <div class="cc-handle">Abdelrhman Kolkela</div>
+    </a>
+    <a href="https://www.youtube.com/@kolkela" class="contact-card yt" target="_blank" style="border-color:rgba(255,0,0,0.15)">
+      <div class="cc-icon" style="background:rgba(255,0,0,0.08);border-radius:16px;width:64px;height:64px;display:grid;place-items:center">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="#ff0000"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+      </div>
+      <div class="cc-name">يوتيوب</div>
+      <div class="cc-handle">@kolkela</div>
+    </a>
+  </div>
+</div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="cta-bg-circle"></div>
+  <div class="reveal">
+    <h2 class="cta-title">هل أنت جاهز لتطوير<br><span>مركزك؟</span></h2>
+    <p class="cta-sub">تواصل مع المهندس عبدالرحمن الآن وابدأ رحلة الإدارة الذكية</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap">
+      <a href="https://wa.me/201013276086" target="_blank">
+        <button class="btn-hero-main" style="font-size:17px;padding:18px 48px" onclick="ripple(event,this)">
+          <span>تواصل الآن عبر واتساب 💬</span>
+        </button>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div class="fb-name">⚡ Co_Workspace</div>
+      <div class="fb-sub">نظام إدارة مراكز الألعاب | الإصدار ٢.٠</div>
+      <div style="display:flex;gap:10px;margin-top:12px">
+        <a href="https://www.facebook.com/abdelrhmankolkala?locale=ar_AR" target="_blank" style="width:32px;height:32px;border-radius:8px;background:rgba(24,119,242,0.1);border:1px solid rgba(24,119,242,0.2);display:grid;place-items:center;transition:all 0.3s;text-decoration:none" onmouseenter="this.style.background='rgba(24,119,242,0.2)'" onmouseleave="this.style.background='rgba(24,119,242,0.1)'"><svg width="14" height="14" viewBox="0 0 24 24" fill="#1877f2"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg></a>
+        <a href="https://www.linkedin.com/in/abdelrhman-mustafa-kolkela-27b290318" target="_blank" style="width:32px;height:32px;border-radius:8px;background:rgba(10,102,194,0.1);border:1px solid rgba(10,102,194,0.2);display:grid;place-items:center;transition:all 0.3s;text-decoration:none" onmouseenter="this.style.background='rgba(10,102,194,0.2)'" onmouseleave="this.style.background='rgba(10,102,194,0.1)'"><svg width="14" height="14" viewBox="0 0 24 24" fill="#0a66c2"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg></a>
+        <a href="https://www.youtube.com/@kolkela" target="_blank" style="width:32px;height:32px;border-radius:8px;background:rgba(255,0,0,0.08);border:1px solid rgba(255,0,0,0.15);display:grid;place-items:center;transition:all 0.3s;text-decoration:none" onmouseenter="this.style.background='rgba(255,0,0,0.18)'" onmouseleave="this.style.background='rgba(255,0,0,0.08)'"><svg width="14" height="14" viewBox="0 0 24 24" fill="#ff0000"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+        <a href="https://wa.me/201013276086" target="_blank" style="width:32px;height:32px;border-radius:8px;background:rgba(37,211,102,0.08);border:1px solid rgba(37,211,102,0.15);display:grid;place-items:center;transition:all 0.3s;text-decoration:none" onmouseenter="this.style.background='rgba(37,211,102,0.18)'" onmouseleave="this.style.background='rgba(37,211,102,0.08)'"><svg width="14" height="14" viewBox="0 0 24 24" fill="#25d366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.122 1.534 5.853L.054 23.486a.5.5 0 00.596.636l5.82-1.527A11.944 11.944 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.886 0-3.659-.518-5.176-1.423l-.369-.224-3.832 1.005 1.022-3.727-.242-.386A9.961 9.961 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg></a>
+      </div>
+    </div>
+    <ul class="footer-links-list">
+      <li><a href="#home">الرئيسية</a></li>
+      <li><a href="#features">المميزات</a></li>
+      <li><a href="#screenshots">لقطات النظام</a></li>
+      <li><a href="#modules">الوحدات</a></li>
+      <li><a href="#contact">تواصل</a></li>
+    </ul>
+    <div class="footer-copy">بناه المهندس عبدالرحمن قلقيله<br>كلية الحاسبات والذكاء الاصطناعي<br><span style="color:rgba(255,255,255,0.15);font-size:11px">© 2026 Co_Workspace. جميع الحقوق محفوظة</span></div>
+  </div>
+</footer>
+
+</div><!-- /page -->
+
+<script>
+// CURSOR
+const cursor=document.getElementById('cursor'),ring=document.getElementById('cursorRing');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{
+  mx=e.clientX;my=e.clientY;
+  cursor.style.left=mx+'px';cursor.style.top=my+'px';
+});
+(function animRing(){rx+=(mx-rx)*0.1;ry+=(my-ry)*0.1;
+  ring.style.left=rx+'px';ring.style.top=ry+'px';
+  requestAnimationFrame(animRing);})();
+document.querySelectorAll('a,button,.feat-card,.mod-card,.bento-card').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{cursor.classList.add('hover');ring.classList.add('hover')});
+  el.addEventListener('mouseleave',()=>{cursor.classList.remove('hover');ring.classList.remove('hover')});
+});
+
+// PARTICLES
+const cvs=document.getElementById('particles'),ctx=cvs.getContext('2d');
+let W,H,pts=[];
+function resize(){W=cvs.width=window.innerWidth;H=cvs.height=window.innerHeight;}
+resize();window.addEventListener('resize',resize);
+class Pt{
+  constructor(){this.reset();}
+  reset(){this.x=Math.random()*W;this.y=Math.random()*H;this.r=Math.random()*1.4+0.2;
+    this.vx=(Math.random()-.5)*.25;this.vy=(Math.random()-.5)*.25;
+    this.a=Math.random()*.5+0.08;
+    const c=Math.random();this.c=c>.75?'#f5c842':c>.5?'#00d4ff':c>.25?'#a78bfa':'#ffffff';}
+  update(){this.x+=this.vx;this.y+=this.vy;
+    if(this.x<0||this.x>W||this.y<0||this.y>H)this.reset();}
+  draw(){ctx.save();ctx.globalAlpha=this.a;ctx.fillStyle=this.c;
+    ctx.beginPath();ctx.arc(this.x,this.y,this.r,0,Math.PI*2);ctx.fill();ctx.restore();}
+}
+for(let i=0;i<180;i++)pts.push(new Pt());
+function drawConns(){
+  for(let i=0;i<pts.length;i++)for(let j=i+1;j<pts.length;j++){
+    const dx=pts[i].x-pts[j].x,dy=pts[i].y-pts[j].y,d=Math.sqrt(dx*dx+dy*dy);
+    if(d<90){ctx.save();ctx.globalAlpha=(1-d/90)*.06;ctx.strokeStyle='#f5c842';
+      ctx.lineWidth=.4;ctx.beginPath();ctx.moveTo(pts[i].x,pts[i].y);ctx.lineTo(pts[j].x,pts[j].y);ctx.stroke();ctx.restore();}
+  }
+}
+(function anim(){ctx.clearRect(0,0,W,H);pts.forEach(p=>{p.update();p.draw();});drawConns();requestAnimationFrame(anim);})();
+document.addEventListener('mousemove',e=>{
+  pts.forEach(p=>{const dx=p.x-e.clientX,dy=p.y-e.clientY,d=Math.sqrt(dx*dx+dy*dy);
+    if(d<120){p.vx+=dx/d*.45;p.vy+=dy/d*.45;}p.vx*=.97;p.vy*=.97;});
+});
+
+// NAVBAR
+const nav=document.getElementById('navbar');
+window.addEventListener('scroll',()=>nav.classList.toggle('scrolled',scrollY>60));
+
+// REVEAL
+const revEls=document.querySelectorAll('.reveal');
+new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in');}),{threshold:0.1}).observe||
+document.querySelectorAll('.reveal').forEach(el=>{
+  new IntersectionObserver(en=>en.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in');}),{threshold:0.1}).observe(el);
+});
+revEls.forEach(el=>new IntersectionObserver(en=>en.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in');}),{threshold:0.08}).observe(el));
+
+// CARD GLOW
+function cardGlow(e,card){
+  const r=card.getBoundingClientRect();
+  card.style.setProperty('--mx',((e.clientX-r.left)/r.width*100)+'%');
+  card.style.setProperty('--my',((e.clientY-r.top)/r.height*100)+'%');
+}
+
+// RIPPLE
+function ripple(e,btn){
+  const r=document.createElement('span');r.classList.add('ripple');
+  const rect=btn.getBoundingClientRect(),sz=Math.max(rect.width,rect.height);
+  r.style.cssText=`width:${sz}px;height:${sz}px;left:${e.clientX-rect.left-sz/2}px;top:${e.clientY-rect.top-sz/2}px;`;
+  btn.style.position='relative';btn.appendChild(r);setTimeout(()=>r.remove(),700);
+}
+
+// LIVE CLOCK
+function tick(){
+  const n=new Date();
+  document.getElementById('liveClock').textContent=n.toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  document.getElementById('liveDate').textContent=n.toLocaleDateString('ar-EG',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+}
+tick();setInterval(tick,1000);
+
+// MINI BAR CHART
+const bars=document.getElementById('revBars');
+const vals=[45,62,38,71,55,83,66,79,58,92,74,88];
+const colors=['#f5c842','#ff9f43','#f5c842','#00d4ff','#f5c842','#10b981','#a78bfa','#f5c842','#00d4ff','#10b981','#f5c842','#ff9f43'];
+vals.forEach((v,i)=>{
+  const b=document.createElement('div');
+  b.className='mini-bar';
+  b.style.cssText=`height:${v}%;background:${colors[i]};opacity:0.7;border-radius:3px 3px 0 0;`;
+  b.setAttribute('data-tip',`${Math.round(v*125).toLocaleString('ar-EG')} جنيه`);
+  bars.appendChild(b);
+});
+
+// PARALLAX ORBS
+window.addEventListener('scroll',()=>{
+  const y=scrollY;
+  document.querySelectorAll('.orb-1').forEach(o=>o.style.transform=`translateY(${y*.04}px)`);
+  document.querySelectorAll('.orb-2').forEach(o=>o.style.transform=`translateY(${-y*.03}px)`);
+});
+
+// FEAT CARD onmousemove already inline
+// All feat-card bento-card hover effects via CSS
+</script>
+</body>
+</html>
